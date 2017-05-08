@@ -1,0 +1,70 @@
+version: '2'
+
+services:
+  webserver:
+    image: maxacarvalho/docker-guia-dublin-webserver:latest
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "${APP_PORT}:80"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100k
+    networks:
+      - gdnet
+
+  backend:
+    image: maxacarvalho/docker-php-fpm:7
+    volumes:
+      - .:/var/www/html
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100k
+    networks:
+      - gdnet
+
+  frontend:
+    image: maxacarvalho/docker-node:7
+    volumes:
+      - .:/var/www/html
+    networks:
+      - gdnet
+
+  database:
+    image: mariadb:10
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: guiadublin
+      MYSQL_USER: guiadublin
+      MYSQL_PASSWORD: secret
+    volumes:
+      - database:/var/lib/mysql/
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100k
+    networks:
+      - gdnet
+
+  session:
+    image: redis:3.0-alpine
+    volumes:
+      - session:/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100k
+    networks:
+      - gdnet
+
+networks:
+  gdnet:
+    driver: "bridge"
+
+volumes:
+  database:
+    driver: "local"
+  session:
+    driver: "local"
